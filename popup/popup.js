@@ -1,5 +1,7 @@
 "use strict";
 
+const DEFAULT_MODEL = "openai/gpt-4o-mini";
+
 // ─── State machine ─────────────────────────────────────────────────────────────
 
 const states = {
@@ -40,15 +42,12 @@ async function init() {
   }
 
   const selectEl = document.querySelector(".model-select");
+  const activeModel = model || DEFAULT_MODEL;
 
-  if (model) {
-    // A model was previously saved — restore it, overriding the HTML selected attr
-    selectEl.value = model;
-  } else {
-    // Nothing saved yet — the browser already applied the HTML selected attribute,
-    // so selectEl.value reflects whichever option has selected in the markup.
-    // Persist it now so future opens are consistent.
-    await store.set({ model: selectEl.value });
+  selectEl.value = activeModel;
+
+  if (!model) {
+    await store.set({ model: activeModel });
   }
 
   show("idle");
