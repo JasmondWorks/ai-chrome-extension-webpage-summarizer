@@ -39,9 +39,16 @@ async function init() {
     return;
   }
 
-  // Restore the previously saved model selection, if any
+  const selectEl = document.querySelector(".model-select");
+
   if (model) {
-    document.querySelector(".model-select").value = model;
+    // A model was previously saved — restore it, overriding the HTML selected attr
+    selectEl.value = model;
+  } else {
+    // Nothing saved yet — the browser already applied the HTML selected attribute,
+    // so selectEl.value reflects whichever option has selected in the markup.
+    // Persist it now so future opens are consistent.
+    await store.set({ model: selectEl.value });
   }
 
   show("idle");
