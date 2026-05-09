@@ -1,8 +1,6 @@
 "use strict";
 
-// ─── State elements ────────────────────────────────────────────────────────────
-// Each key maps to one <div> in the HTML. show() hides all of them
-// then removes "hidden" from whichever one was requested.
+// ─── State machine ─────────────────────────────────────────────────────────────
 
 const states = {
   setup:   document.querySelector(".setup-state"),
@@ -16,6 +14,20 @@ function show(name) {
   Object.entries(states).forEach(([key, el]) => {
     el.classList.toggle("hidden", key !== name);
   });
+}
+
+// ─── Sanitize ──────────────────────────────────────────────────────────────────
+// Escapes characters that would be parsed as HTML when inserted via
+// insertAdjacentHTML. Any string coming from outside the extension
+// (AI response, page title, URL) must pass through this first.
+
+function sanitize(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 // ─── Init ──────────────────────────────────────────────────────────────────────
@@ -38,16 +50,17 @@ async function loadTabInfo() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   currentTab = tab;
 
-  const titleEl   = document.querySelector(".page-title");
-  const faviconEl = document.querySelector(".favicon");
+  const html = `
+    ${tab?.favIconUrl
+      ? `<img class="w-4 h-4 rounded-sm shrink-0" src="${sanitize(tab.favIconUrl)}" alt="" />`
+      : ""
+    }
+    <span class="text-xs text-zinc-400 truncate">${sanitize(tab?.title || "Unknown page")}</span>
+  `;
 
-  titleEl.textContent = tab?.title || "Unknown page";
-
-  if (tab?.favIconUrl) {
-    faviconEl.src = tab.favIconUrl;
-  } else {
-    faviconEl.style.display = "none";
-  }
+  const pageInfo = document.querySelector(".page-info");
+  pageInfo.innerHTML = "";
+  pageInfo.insertAdjacentHTML("afterbegin", html);
 }
 
 // ─── Summarize flow ────────────────────────────────────────────────────────────
@@ -57,14 +70,11 @@ async function summarize() {
   show("loading");
 
   try {
-    // Step 1: message content.js — it extracts the page text and replies
     const contentResp = await sendToTab(currentTab.id, "GET_CONTENT");
     if (!contentResp?.success) {
       throw new Error(contentResp?.error || "Could not read page content.");
     }
 
-    // Step 2: message background.js — it calls the OpenRouter API and replies
-    // with the parsed summary. The API key never leaves background.js.
     const aiResp = await sendToBackground("SUMMARIZE", contentResp.data);
 
     if (aiResp?.error === "NO_KEY") {
@@ -76,52 +86,44 @@ async function summarize() {
       throw new Error(aiResp?.error || "AI request failed.");
     }
 
-    // Step 3: background.js replied with { success: true, data: {...} }
-    // aiResp.data is the parsed JSON from the AI: { summary, readingTimeMinutes, wordCount }
     renderResult(aiResp.data);
     show("result");
   } catch (err) {
-    document.querySelector(".error-msg").textContent = err.message;
+    const html = sanitize(err.message);
+
+    const errorMsg = document.querySelector(".error-msg");
+    errorMsg.innerHTML = "";
+    errorMsg.insertAdjacentHTML("afterbegin", html);
+
     show("error");
   }
-}
-
-// ─── HTML template functions ───────────────────────────────────────────────────
-// Each function accepts data ("props") and returns an HTML string.
-// sanitize() escapes any data that came from outside before it touches innerHTML.
-
-function sanitize(str) {
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
-function BulletItem({ text }) {
-  return `
-    <li class="flex items-start gap-2 text-sm text-zinc-300 leading-relaxed">
-      <span class="mt-[7px] w-1.5 h-1.5 rounded-full bg-green-500 shrink-0"></span>
-      <span>${sanitize(text)}</span>
-    </li>
-  `;
-}
-
-function BulletList({ items }) {
-  return items.map((text) => BulletItem({ text })).join("");
 }
 
 // ─── Render result ─────────────────────────────────────────────────────────────
 
 function renderResult(data) {
-  document.querySelector(".read-time").textContent =
-    `${data.readingTimeMinutes ?? "—"} min read`;
-  document.querySelector(".word-count").textContent =
-    `${(data.wordCount ?? 0).toLocaleString()} words`;
+  // ── Meta row: reading time and word count ──
+  const metaHtml = `
+    <span class="text-xs text-zinc-500">${sanitize(String(data.readingTimeMinutes ?? "—"))} min read</span>
+    <span class="text-zinc-700 text-xs">·</span>
+    <span class="text-xs text-zinc-500">${(data.wordCount ?? 0).toLocaleString()} words</span>
+  `;
 
-  document.querySelector(".bullets").innerHTML =
-    BulletList({ items: data.summary || [] });
+  const metaRow = document.querySelector(".meta-row");
+  metaRow.innerHTML = "";
+  metaRow.insertAdjacentHTML("afterbegin", metaHtml);
+
+  // ── Bullet list: one <li> per summary point ──
+  const bulletsHtml = (data.summary || []).map((text) => `
+    <li class="flex items-start gap-2 text-sm text-zinc-300 leading-relaxed">
+      <span class="mt-[7px] w-1.5 h-1.5 rounded-full bg-green-500 shrink-0"></span>
+      <span>${sanitize(text)}</span>
+    </li>
+  `).join("");
+
+  const bullets = document.querySelector(".bullets");
+  bullets.innerHTML = "";
+  bullets.insertAdjacentHTML("afterbegin", bulletsHtml);
 }
 
 // ─── Chrome storage helpers ────────────────────────────────────────────────────
@@ -134,8 +136,6 @@ const store = {
 
 // ─── Chrome messaging helpers ─────────────────────────────────────────────────
 
-// Sends a message to background.js. background.js calls sendResponse(data)
-// which resolves this Promise with that data — that's how the reply travels back.
 function sendToBackground(type, payload = null) {
   return new Promise((resolve) => {
     chrome.runtime.sendMessage({ type, payload }, (resp) => {
@@ -145,9 +145,6 @@ function sendToBackground(type, payload = null) {
   });
 }
 
-// Sends a message to content.js running inside the active tab.
-// Falls back to injecting the script first if the tab was already open
-// before the extension loaded.
 async function sendToTab(tabId, type, payload = null) {
   const msg = { type, payload };
 
@@ -193,8 +190,6 @@ document.querySelector(".change-key-btn").addEventListener("click", () => {
 });
 
 document.querySelector(".clear-btn").addEventListener("click", () => show("idle"));
-
-// reset-btn: wipes the current flow and goes back to the very first screen
 document.querySelector(".reset-btn").addEventListener("click", () => init());
 
 // ─── Boot ─────────────────────────────────────────────────────────────────────
