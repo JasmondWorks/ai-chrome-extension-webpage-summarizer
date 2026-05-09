@@ -55,19 +55,6 @@ let currentTab = null;
 async function loadTabInfo() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   currentTab = tab;
-  console.log(tab);
-
-  const html = `
-    ${tab?.favIconUrl
-      ? `<img class="w-4 h-4 rounded-sm shrink-0" src="${sanitize(tab.favIconUrl)}" alt="" />`
-      : ""
-    }
-    <span class="text-xs text-zinc-400 truncate">${sanitize(tab?.title || "Unknown page")}</span>
-  `;
-
-  const pageInfo = document.querySelector(".page-info");
-  pageInfo.innerHTML = "";
-  pageInfo.insertAdjacentHTML("afterbegin", html);
 }
 
 // ─── Summarize flow ────────────────────────────────────────────────────────────
