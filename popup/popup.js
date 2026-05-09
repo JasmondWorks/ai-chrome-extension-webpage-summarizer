@@ -33,11 +33,17 @@ function sanitize(str) {
 // ─── Init ──────────────────────────────────────────────────────────────────────
 
 async function init() {
-  const { apiKey } = await store.get(["apiKey"]);
+  const { apiKey, model } = await store.get(["apiKey", "model"]);
   if (!apiKey) {
     show("setup");
     return;
   }
+
+  // Restore the previously saved model selection, if any
+  if (model) {
+    document.querySelector(".model-select").value = model;
+  }
+
   show("idle");
   loadTabInfo();
 }
@@ -49,6 +55,7 @@ let currentTab = null;
 async function loadTabInfo() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   currentTab = tab;
+  console.log(tab);
 
   const html = `
     ${tab?.favIconUrl
@@ -71,6 +78,7 @@ async function summarize() {
 
   try {
     const contentResp = await sendToTab(currentTab.id, "GET_CONTENT");
+    console.log(contentResp);
     if (!contentResp?.success) {
       throw new Error(contentResp?.error || "Could not read page content.");
     }
@@ -171,6 +179,13 @@ async function sendToTab(tabId, type, payload = null) {
 }
 
 // ─── Event listeners ──────────────────────────────────────────────────────────
+
+// Persist the chosen model immediately when the user changes it.
+// background.js reads chrome.storage.local "model" on every SUMMARIZE call,
+// so it will pick up whatever is saved here without any further wiring.
+document.querySelector(".model-select").addEventListener("change", async (e) => {
+  await store.set({ model: e.target.value });
+});
 
 document.querySelector(".save-key-btn").addEventListener("click", async () => {
   const key = document.querySelector(".key-input").value.trim();

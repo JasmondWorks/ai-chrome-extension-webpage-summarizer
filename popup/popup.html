@@ -53,6 +53,21 @@
     <div class="idle-state hidden p-4">
       <!-- Empty container — popup.js inserts the favicon + page title here -->
       <div class="page-info flex items-center gap-2 px-3 py-2 mb-4 rounded-lg bg-zinc-900"></div>
+
+      <!-- Model selector -->
+      <div class="mb-3">
+        <label class="block text-xs text-zinc-500 mb-1.5">Model</label>
+        <select
+          class="model-select w-full px-3 py-2 text-sm rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 outline-none focus:border-green-500 transition-colors cursor-pointer"
+        >
+          <option value="openai/gpt-4o-mini">GPT-4o Mini — fast &amp; cheap</option>
+          <option value="openai/gpt-4o">GPT-4o — smarter</option>
+          <option value="google/gemini-2.5-flash">Gemini 2.5 Flash</option>
+          <option value="anthropic/claude-haiku-3-5">Claude 3.5 Haiku</option>
+          <option value="meta-llama/llama-3.1-8b-instruct:free">Llama 3.1 8B — free</option>
+        </select>
+      </div>
+
       <button
         class="summarize-btn w-full py-2.5 rounded-lg bg-green-500 hover:bg-green-400 text-black text-sm font-semibold transition-colors flex items-center justify-center gap-2"
       >
