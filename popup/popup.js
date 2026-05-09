@@ -86,9 +86,33 @@ async function summarize() {
   }
 }
 
+// ─── HTML template functions ───────────────────────────────────────────────────
+// Each function accepts data ("props") and returns an HTML string.
+// sanitize() escapes any data that came from outside before it touches innerHTML.
+
+function sanitize(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function BulletItem({ text }) {
+  return `
+    <li class="flex items-start gap-2 text-sm text-zinc-300 leading-relaxed">
+      <span class="mt-[7px] w-1.5 h-1.5 rounded-full bg-green-500 shrink-0"></span>
+      <span>${sanitize(text)}</span>
+    </li>
+  `;
+}
+
+function BulletList({ items }) {
+  return items.map((text) => BulletItem({ text })).join("");
+}
+
 // ─── Render result ─────────────────────────────────────────────────────────────
-// Uses the <template class="bullet-tpl"> from the HTML instead of
-// building elements manually with createElement / appendChild.
 
 function renderResult(data) {
   document.querySelector(".read-time").textContent =
@@ -96,17 +120,8 @@ function renderResult(data) {
   document.querySelector(".word-count").textContent =
     `${(data.wordCount ?? 0).toLocaleString()} words`;
 
-  const ul  = document.querySelector(".bullets");
-  const tpl = document.querySelector(".bullet-tpl");
-
-  ul.replaceChildren(); // clear previous bullets without touching innerHTML
-
-  (data.summary || []).forEach((point) => {
-    // Clone the template, fill in the text, drop it into the list
-    const clone = tpl.content.cloneNode(true);
-    clone.querySelector(".bullet-text").textContent = point; // textContent — no XSS risk
-    ul.appendChild(clone);
-  });
+  document.querySelector(".bullets").innerHTML =
+    BulletList({ items: data.summary || [] });
 }
 
 // ─── Chrome storage helpers ────────────────────────────────────────────────────
