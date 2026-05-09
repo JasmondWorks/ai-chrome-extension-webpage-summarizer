@@ -9,12 +9,15 @@ if (!window.__pageLensInjected) {
   chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     if (msg.type === "GET_CONTENT") {
       try {
-        sendResponse({ success: true, data: extractContent() });
+        const data = extractContent();
+        console.log("[content.js] extracted data:", data);
+        sendResponse({ success: true, data });
       } catch (err) {
+        console.log("[content.js] extraction error:", err.message);
         sendResponse({ success: false, error: err.message });
       }
     }
-    return false; // synchronous response — no need to keep channel open
+    return false;
   });
 
   // ─── Content extraction ─────────────────────────────────────────────────────
@@ -22,7 +25,6 @@ if (!window.__pageLensInjected) {
   function extractContent() {
     const title = document.title;
 
-    // Try semantic selectors first, in priority order
     const selectors = [
       "article",
       '[role="main"]',
@@ -34,14 +36,17 @@ if (!window.__pageLensInjected) {
       "#main-content",
     ];
 
+    // for...of so that return exits extractContent, not just the callback
     for (const sel of selectors) {
       const el = document.querySelector(sel);
       if (el && el.innerText.trim().length > 300) {
+        console.log("[content.js] matched selector:", sel);
         return { title, content: clean(el.innerText) };
       }
     }
 
     // Fallback: strip noise elements from a body clone
+    console.log("[content.js] no selector matched — using body fallback");
     const clone = document.body.cloneNode(true);
     ["nav", "header", "footer", "aside", "script", "style", "noscript"].forEach(
       (tag) => clone.querySelectorAll(tag).forEach((el) => el.remove())
@@ -52,9 +57,9 @@ if (!window.__pageLensInjected) {
 
   function clean(text) {
     return text
-      .replace(/[ \t]+/g, " ")       // collapse horizontal whitespace
-      .replace(/\n{3,}/g, "\n\n")    // collapse excessive blank lines
+      .replace(/[ \t]+/g, " ")
+      .replace(/\n{3,}/g, "\n\n")
       .trim()
-      .slice(0, 12000);              // cap length for token limits
+      .slice(0, 12000);
   }
 }

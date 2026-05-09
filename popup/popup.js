@@ -65,12 +65,13 @@ async function summarize() {
 
   try {
     const contentResp = await sendToTab(currentTab.id, "GET_CONTENT");
-    console.log(contentResp);
+    console.log("[popup.js] content from page:", contentResp);
     if (!contentResp?.success) {
       throw new Error(contentResp?.error || "Could not read page content.");
     }
 
     const aiResp = await sendToBackground("SUMMARIZE", contentResp.data);
+    console.log("[popup.js] AI response from background:", aiResp);
 
     if (aiResp?.error === "NO_KEY") {
       await store.remove(["apiKey"]);

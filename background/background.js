@@ -20,10 +20,13 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
 // ─── Summarize handler ────────────────────────────────────────────────────────
 
 async function handleSummarize({ content, title }, sendResponse) {
-  // Read the API key from storage — never hardcoded
   const result = await chrome.storage.local.get(["apiKey", "model"]);
   const apiKey = result.apiKey;
   const model  = result.model || "openai/gpt-4o-mini";
+
+  console.log("[background.js] model:", model);
+  console.log("[background.js] title received:", title);
+  console.log("[background.js] content length:", content?.length);
 
   if (!apiKey) {
     sendResponse({ error: "NO_KEY" });
@@ -66,9 +69,12 @@ async function handleSummarize({ content, title }, sendResponse) {
     const raw  = data.choices?.[0]?.message?.content;
     if (!raw) throw new Error("Empty response from AI.");
 
-    // Strip markdown fences if the model wraps the JSON
+    console.log("[background.js] raw AI response:", raw);
+
     const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
     const parsed  = JSON.parse(cleaned);
+
+    console.log("[background.js] parsed summary:", parsed);
 
     sendResponse({ success: true, data: parsed });
   } catch (err) {
