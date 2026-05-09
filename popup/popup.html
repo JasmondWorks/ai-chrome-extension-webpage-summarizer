@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PageLens</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <!-- Settings Panel (hidden by default) -->
+    <div id="settings-panel" class="panel hidden" role="dialog" aria-label="Settings">
+      <div class="panel-header">
+        <button class="back-btn" id="close-settings-btn" aria-label="Back to main">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Back
+        </button>
+        <span class="panel-title">Settings</span>
+      </div>
+
+      <div class="settings-body">
+        <div class="field-group">
+          <label for="api-key-input" class="field-label">
+            OpenAI API Key
+            <span class="field-hint">Never stored in plain text in sync storage</span>
+          </label>
+          <div class="key-input-wrap">
+            <input
+              type="password"
+              id="api-key-input"
+              class="field-input"
+              placeholder="sk-or-..."
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <button class="toggle-key-btn" id="toggle-key-btn" aria-label="Toggle key visibility" title="Show/hide key">
+              <svg class="eye-icon" id="eye-show" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M1 8s3-5 7-5 7 5 7 5-3 5-7 5-7-5-7-5z" stroke="currentColor" stroke-width="1.3"/>
+                <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.3"/>
+              </svg>
+              <svg class="eye-icon hidden" id="eye-hide" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M2 2l12 12M6.5 6.6A2 2 0 0110 9.5M4 4.5C2.6 5.6 1.5 7 1 8s3 5 7 5c1.3 0 2.5-.3 3.5-.9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                <path d="M9 3.5C13 4.5 15 8 15 8s-.8 1.4-2 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+          <a href="https://openrouter.ai/keys" target="_blank" class="get-key-link">
+            Get an OpenRouter key →
+          </a>
+        </div>
+
+        <div class="field-group">
+          <label for="model-select" class="field-label">Model</label>
+          <select id="model-select" class="field-input field-select">
+            <option value="openai/gpt-4o-mini">GPT-4o Mini (fast, cheap)</option>
+            <option value="openai/gpt-4o">GPT-4o (smarter, slower)</option>
+            <option value="google/gemini-flash-1.5">Gemini 1.5 Flash (fast)</option>
+            <option value="anthropic/claude-haiku-3-5">Claude 3.5 Haiku (fast)</option>
+            <option value="meta-llama/llama-3.1-8b-instruct:free">Llama 3.1 8B (free)</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Theme</label>
+          <div class="theme-toggle-row">
+            <button class="theme-chip active" data-theme="dark" id="theme-dark">Dark</button>
+            <button class="theme-chip" data-theme="light" id="theme-light">Light</button>
+          </div>
+        </div>
+
+        <div class="settings-actions">
+          <button class="btn-primary" id="save-settings-btn">Save Settings</button>
+          <button class="btn-ghost" id="clear-cache-btn">Clear Cache</button>
+        </div>
+
+        <p class="settings-note" id="settings-status" aria-live="polite"></p>
+      </div>
+    </div>
+
+    <!-- Main Panel -->
+    <div id="main-panel" class="panel">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="logo-mark">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <circle cx="11" cy="11" r="10" stroke="var(--accent)" stroke-width="1.5"/>
+            <path d="M7 11a4 4 0 018 0" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="11" cy="11" r="2" fill="var(--accent)"/>
+          </svg>
+        </div>
+        <span class="app-name">PageLens</span>
+        <button class="icon-btn" id="settings-btn" aria-label="Open settings" title="Settings">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15M2.8 2.8l1.06 1.06M12.14 12.14l1.06 1.06M2.8 13.2l1.06-1.06M12.14 3.86l1.06-1.06" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </header>
+
+      <!-- Page Info Bar -->
+      <div class="page-info-bar" id="page-info-bar">
+        <div class="page-favicon" id="page-favicon-wrap">
+          <img id="page-favicon" src="" alt="" width="14" height="14" />
+        </div>
+        <span class="page-title-text" id="page-title-text">Loading page info…</span>
+      </div>
+
+      <!-- Default / Idle State -->
+      <div id="idle-state" class="state-view">
+        <div class="idle-hero">
+          <div class="idle-icon">
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+              <rect x="6" y="8" width="28" height="24" rx="3" stroke="var(--muted)" stroke-width="1.5"/>
+              <path d="M12 16h16M12 20h10M12 24h13" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <p class="idle-label">Summarize this page with AI</p>
+          <p class="idle-sub">Bullet points, key insights &amp; reading time</p>
+        </div>
+
+        <div class="action-row">
+          <button class="btn-primary btn-full" id="summarize-btn" aria-label="Summarize current page">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+              <path d="M7.5 1v13M1 7.5h13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            Summarize Page
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loading-state" class="state-view hidden">
+        <div class="loading-body">
+          <div class="spinner" aria-label="Loading"></div>
+          <p class="loading-label" id="loading-label">Extracting content…</p>
+          <div class="loading-steps">
+            <div class="step" id="step-extract">
+              <span class="step-dot"></span>
+              <span>Extracting page content</span>
+            </div>
+            <div class="step" id="step-send">
+              <span class="step-dot"></span>
+              <span>Sending to AI</span>
+            </div>
+            <div class="step" id="step-format">
+              <span class="step-dot"></span>
+              <span>Formatting summary</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div id="error-state" class="state-view hidden">
+        <div class="error-body">
+          <div class="error-icon">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="14" stroke="var(--error)" stroke-width="1.5"/>
+              <path d="M16 10v7M16 21v1" stroke="var(--error)" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <p class="error-message" id="error-message">Something went wrong</p>
+          <div class="error-actions">
+            <button class="btn-primary" id="retry-btn">Try Again</button>
+            <button class="btn-ghost" id="error-settings-btn">Check Settings</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary State -->
+      <div id="summary-state" class="state-view hidden">
+        <!-- Meta Row -->
+        <div class="summary-meta-row">
+          <div class="meta-chip">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+              <circle cx="5.5" cy="5.5" r="4.5" stroke="currentColor" stroke-width="1.1"/>
+              <path d="M5.5 3V5.5L7 7" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+            </svg>
+            <span id="meta-read-time">— min read</span>
+          </div>
+          <div class="meta-chip">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+              <path d="M1 2.5h9M1 5.5h6M1 8.5h7.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+            </svg>
+            <span id="meta-word-count">— words</span>
+          </div>
+          <div class="meta-chip sentiment-chip" id="meta-sentiment">
+            <span id="meta-sentiment-text">—</span>
+          </div>
+          <div class="meta-chip cache-chip hidden" id="cache-chip" title="Loaded from cache">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <path d="M5 1.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7z" stroke="currentColor" stroke-width="1"/>
+              <path d="M3.5 5l1 1 2-2" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Cached
+          </div>
+        </div>
+
+        <!-- Summary Content (scrollable) -->
+        <div class="summary-scroll">
+          <!-- Summary Bullets -->
+          <section class="summary-section" aria-label="Summary">
+            <h2 class="section-label">Summary</h2>
+            <ul class="bullet-list" id="summary-bullets" aria-live="polite"></ul>
+          </section>
+
+          <!-- Key Insights -->
+          <section class="summary-section" aria-label="Key Insights">
+            <h2 class="section-label">Key Insights</h2>
+            <ul class="insight-list" id="insights-list" aria-live="polite"></ul>
+          </section>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="summary-footer">
+          <button class="btn-ghost btn-sm" id="highlight-btn" aria-pressed="false">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+              <path d="M2 10l1.5-4L9 1.5 11.5 4 6 9.5 2 10z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+              <path d="M7.5 3l2.5 2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+            Highlight
+          </button>
+          <button class="btn-ghost btn-sm" id="copy-btn">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+              <rect x="4.5" y="4.5" width="7" height="8" rx="1" stroke="currentColor" stroke-width="1.2"/>
+              <path d="M1.5 8.5v-7a1 1 0 011-1h7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+            Copy
+          </button>
+          <button class="btn-ghost btn-sm" id="refresh-btn" title="Re-summarize">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+              <path d="M11 6.5A4.5 4.5 0 112 6.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              <path d="M11 3.5V6.5H8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Refresh
+          </button>
+          <button class="btn-ghost btn-sm" id="clear-btn">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+              <path d="M2 2l9 9M11 2l-9 9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+            Clear
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
