@@ -26,19 +26,17 @@
     </header>
 
     <!-- Setup state: shown when no API key is saved -->
-    <div id="setup-state" class="p-4">
+    <div class="setup-state p-4">
       <p class="text-xs text-zinc-400 mb-3">
         Paste your OpenRouter API key to get started.
       </p>
       <input
-        id="key-input"
+        class="key-input w-full px-3 py-2 mb-3 text-sm rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-600 outline-none focus:border-green-500 transition-colors"
         type="password"
         placeholder="sk-or-..."
-        class="w-full px-3 py-2 mb-3 text-sm rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-600 outline-none focus:border-green-500 transition-colors"
       />
       <button
-        id="save-key-btn"
-        class="w-full py-2 rounded-lg bg-green-500 hover:bg-green-400 text-black text-sm font-semibold transition-colors"
+        class="save-key-btn w-full py-2 rounded-lg bg-green-500 hover:bg-green-400 text-black text-sm font-semibold transition-colors"
       >
         Save Key
       </button>
@@ -52,14 +50,13 @@
     </div>
 
     <!-- Idle state: ready to summarize -->
-    <div id="idle-state" class="hidden p-4">
+    <div class="idle-state hidden p-4">
       <div class="flex items-center gap-2 px-3 py-2 mb-4 rounded-lg bg-zinc-900">
-        <img id="favicon" src="" alt="" class="w-4 h-4 rounded-sm flex-shrink-0" />
-        <span id="page-title" class="text-xs text-zinc-400 truncate">Loading…</span>
+        <img class="favicon w-4 h-4 rounded-sm shrink-0" src="" alt="" />
+        <span class="page-title text-xs text-zinc-400 truncate">Loading…</span>
       </div>
       <button
-        id="summarize-btn"
-        class="w-full py-2.5 rounded-lg bg-green-500 hover:bg-green-400 text-black text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+        class="summarize-btn w-full py-2.5 rounded-lg bg-green-500 hover:bg-green-400 text-black text-sm font-semibold transition-colors flex items-center justify-center gap-2"
       >
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
           <path d="M2 3.5h10M2 7h7M2 10.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
@@ -67,15 +64,14 @@
         Summarize Page
       </button>
       <button
-        id="change-key-btn"
-        class="mt-2 w-full py-1.5 text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
+        class="change-key-btn mt-2 w-full py-1.5 text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
       >
         Change API key
       </button>
     </div>
 
     <!-- Loading state -->
-    <div id="loading-state" class="hidden p-4">
+    <div class="loading-state hidden p-4">
       <div class="flex flex-col items-center gap-3 py-8">
         <div class="w-6 h-6 rounded-full border-2 border-zinc-800 border-t-green-500 animate-spin"></div>
         <p class="text-sm text-zinc-400">Analyzing page…</p>
@@ -83,28 +79,26 @@
     </div>
 
     <!-- Result state -->
-    <div id="result-state" class="hidden">
+    <div class="result-state hidden">
       <div class="flex items-center gap-3 px-4 py-2.5 border-b border-zinc-800">
-        <span id="read-time" class="text-xs text-zinc-500">— min read</span>
+        <span class="read-time text-xs text-zinc-500">— min read</span>
         <span class="text-zinc-700 text-xs">·</span>
-        <span id="word-count" class="text-xs text-zinc-500">— words</span>
+        <span class="word-count text-xs text-zinc-500">— words</span>
       </div>
       <div class="px-4 py-3 max-h-64 overflow-y-auto">
         <p class="text-[10px] font-semibold uppercase tracking-widest text-zinc-600 mb-3">
           Summary
         </p>
-        <ul id="bullets" class="space-y-2.5"></ul>
+        <ul class="bullets space-y-2.5"></ul>
       </div>
       <div class="flex gap-2 px-4 py-3 border-t border-zinc-800">
         <button
-          id="again-btn"
-          class="flex-1 py-1.5 text-xs rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 transition-colors"
+          class="again-btn flex-1 py-1.5 text-xs rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 transition-colors"
         >
           Summarize Again
         </button>
         <button
-          id="clear-btn"
-          class="px-3 py-1.5 text-xs rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 transition-colors"
+          class="clear-btn px-3 py-1.5 text-xs rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 transition-colors"
         >
           Clear
         </button>
@@ -112,16 +106,30 @@
     </div>
 
     <!-- Error state -->
-    <div id="error-state" class="hidden p-4 text-center">
+    <div class="error-state hidden p-4 text-center">
       <p class="text-sm text-zinc-300 mb-1">Something went wrong</p>
-      <p id="error-msg" class="text-xs text-red-400 mb-4">—</p>
-      <button
-        id="retry-btn"
-        class="px-4 py-2 text-sm rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 transition-colors"
-      >
-        Try Again
-      </button>
+      <p class="error-msg text-xs text-red-400 mb-4">—</p>
+      <div class="flex justify-center gap-2">
+        <button
+          class="retry-btn px-4 py-2 text-sm rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 transition-colors"
+        >
+          Try Again
+        </button>
+        <button
+          class="reset-btn px-4 py-2 text-sm rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 transition-colors"
+        >
+          Start Over
+        </button>
+      </div>
     </div>
+
+    <!-- Template: one bullet point row — cloned by popup.js for each summary item -->
+    <template class="bullet-tpl">
+      <li class="flex items-start gap-2 text-sm text-zinc-300 leading-relaxed">
+        <span class="mt-[7px] w-1.5 h-1.5 rounded-full bg-green-500 shrink-0"></span>
+        <span class="bullet-text"></span>
+      </li>
+    </template>
 
     <script src="popup.js"></script>
   </body>

@@ -1,13 +1,15 @@
 "use strict";
 
 // ─── State elements ────────────────────────────────────────────────────────────
+// Each key maps to one <div> in the HTML. show() hides all of them
+// then removes "hidden" from whichever one was requested.
 
 const states = {
-  setup:   document.getElementById("setup-state"),
-  idle:    document.getElementById("idle-state"),
-  loading: document.getElementById("loading-state"),
-  result:  document.getElementById("result-state"),
-  error:   document.getElementById("error-state"),
+  setup:   document.querySelector(".setup-state"),
+  idle:    document.querySelector(".idle-state"),
+  loading: document.querySelector(".loading-state"),
+  result:  document.querySelector(".result-state"),
+  error:   document.querySelector(".error-state"),
 };
 
 function show(name) {
@@ -36,8 +38,8 @@ async function loadTabInfo() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   currentTab = tab;
 
-  const titleEl   = document.getElementById("page-title");
-  const faviconEl = document.getElementById("favicon");
+  const titleEl   = document.querySelector(".page-title");
+  const faviconEl = document.querySelector(".favicon");
 
   titleEl.textContent = tab?.title || "Unknown page";
 
@@ -55,13 +57,14 @@ async function summarize() {
   show("loading");
 
   try {
-    // Step 1: ask content.js for the page text
+    // Step 1: message content.js — it extracts the page text and replies
     const contentResp = await sendToTab(currentTab.id, "GET_CONTENT");
     if (!contentResp?.success) {
       throw new Error(contentResp?.error || "Could not read page content.");
     }
 
-    // Step 2: send text to background.js for the AI call
+    // Step 2: message background.js — it calls the OpenRouter API and replies
+    // with the parsed summary. The API key never leaves background.js.
     const aiResp = await sendToBackground("SUMMARIZE", contentResp.data);
 
     if (aiResp?.error === "NO_KEY") {
@@ -73,39 +76,36 @@ async function summarize() {
       throw new Error(aiResp?.error || "AI request failed.");
     }
 
-    // Step 3: render the result
+    // Step 3: background.js replied with { success: true, data: {...} }
+    // aiResp.data is the parsed JSON from the AI: { summary, readingTimeMinutes, wordCount }
     renderResult(aiResp.data);
     show("result");
   } catch (err) {
-    document.getElementById("error-msg").textContent = err.message;
+    document.querySelector(".error-msg").textContent = err.message;
     show("error");
   }
 }
 
-// ─── Render ────────────────────────────────────────────────────────────────────
+// ─── Render result ─────────────────────────────────────────────────────────────
+// Uses the <template class="bullet-tpl"> from the HTML instead of
+// building elements manually with createElement / appendChild.
 
 function renderResult(data) {
-  document.getElementById("read-time").textContent =
+  document.querySelector(".read-time").textContent =
     `${data.readingTimeMinutes ?? "—"} min read`;
-  document.getElementById("word-count").textContent =
+  document.querySelector(".word-count").textContent =
     `${(data.wordCount ?? 0).toLocaleString()} words`;
 
-  const ul = document.getElementById("bullets");
-  ul.innerHTML = "";
+  const ul  = document.querySelector(".bullets");
+  const tpl = document.querySelector(".bullet-tpl");
+
+  ul.replaceChildren(); // clear previous bullets without touching innerHTML
 
   (data.summary || []).forEach((point) => {
-    const li   = document.createElement("li");
-    li.className = "flex items-start gap-2 text-sm text-zinc-300 leading-relaxed";
-
-    const dot  = document.createElement("span");
-    dot.className = "mt-[7px] w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0";
-
-    const text = document.createElement("span");
-    text.textContent = point;   // textContent — never innerHTML
-
-    li.appendChild(dot);
-    li.appendChild(text);
-    ul.appendChild(li);
+    // Clone the template, fill in the text, drop it into the list
+    const clone = tpl.content.cloneNode(true);
+    clone.querySelector(".bullet-text").textContent = point; // textContent — no XSS risk
+    ul.appendChild(clone);
   });
 }
 
@@ -119,6 +119,8 @@ const store = {
 
 // ─── Chrome messaging helpers ─────────────────────────────────────────────────
 
+// Sends a message to background.js. background.js calls sendResponse(data)
+// which resolves this Promise with that data — that's how the reply travels back.
 function sendToBackground(type, payload = null) {
   return new Promise((resolve) => {
     chrome.runtime.sendMessage({ type, payload }, (resp) => {
@@ -128,10 +130,12 @@ function sendToBackground(type, payload = null) {
   });
 }
 
+// Sends a message to content.js running inside the active tab.
+// Falls back to injecting the script first if the tab was already open
+// before the extension loaded.
 async function sendToTab(tabId, type, payload = null) {
   const msg = { type, payload };
 
-  // First attempt — works if content script is already injected
   const first = await new Promise((resolve) => {
     chrome.tabs.sendMessage(tabId, msg, (resp) => {
       if (chrome.runtime.lastError) resolve(null);
@@ -140,13 +144,9 @@ async function sendToTab(tabId, type, payload = null) {
   });
   if (first !== null) return first;
 
-  // Content script not present — inject it then retry
   try {
-    await chrome.scripting.executeScript({
-      target: { tabId },
-      files: ["content/content.js"],
-    });
-  } catch (err) {
+    await chrome.scripting.executeScript({ target: { tabId }, files: ["content/content.js"] });
+  } catch {
     return { error: "Cannot run on this page." };
   }
 
@@ -160,24 +160,27 @@ async function sendToTab(tabId, type, payload = null) {
 
 // ─── Event listeners ──────────────────────────────────────────────────────────
 
-document.getElementById("save-key-btn").addEventListener("click", async () => {
-  const key = document.getElementById("key-input").value.trim();
+document.querySelector(".save-key-btn").addEventListener("click", async () => {
+  const key = document.querySelector(".key-input").value.trim();
   if (!key) return;
   await store.set({ apiKey: key });
   show("idle");
   loadTabInfo();
 });
 
-document.getElementById("summarize-btn").addEventListener("click", summarize);
-document.getElementById("again-btn").addEventListener("click", summarize);
-document.getElementById("retry-btn").addEventListener("click", summarize);
+document.querySelector(".summarize-btn").addEventListener("click", summarize);
+document.querySelector(".again-btn").addEventListener("click", summarize);
+document.querySelector(".retry-btn").addEventListener("click", summarize);
 
-document.getElementById("change-key-btn").addEventListener("click", () => {
-  document.getElementById("key-input").value = "";
+document.querySelector(".change-key-btn").addEventListener("click", () => {
+  document.querySelector(".key-input").value = "";
   show("setup");
 });
 
-document.getElementById("clear-btn").addEventListener("click", () => show("idle"));
+document.querySelector(".clear-btn").addEventListener("click", () => show("idle"));
+
+// reset-btn: wipes the current flow and goes back to the very first screen
+document.querySelector(".reset-btn").addEventListener("click", () => init());
 
 // ─── Boot ─────────────────────────────────────────────────────────────────────
 
