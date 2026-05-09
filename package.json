@@ -1,0 +1,18 @@
+{
+  "name": "stage-4a",
+  "version": "1.0.0",
+  "description": "A clean, production-grade Chrome Extension (Manifest V3) that extracts content from any webpage and returns structured AI-powered summaries: bullet points, key insights, sentiment, and estimated reading time — with optional in-page highlighting.",
+  "main": "index.js",
+  "scripts": {
+    "build": "npx @tailwindcss/cli -i ./src/input.css -o ./popup/output.css",
+    "watch": "npx @tailwindcss/cli -i ./src/input.css -o ./popup/output.css --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.0",
+    "tailwindcss": "^4.3.0"
+  }
+}
