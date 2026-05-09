@@ -43,7 +43,7 @@
         placeholder="sk-or-..."
       />
       <button
-        class="save-key-btn w-full py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-semibold transition-colors"
+        class="save-key-btn w-full py-2 rounded-lg bg-green-600/90 hover:bg-green-700/90 text-white text-sm font-semibold transition-colors"
       >
         Save Key
       </button>
@@ -66,15 +66,11 @@
           <select
             class="model-select appearance-none w-full px-3 py-2 pr-8 text-sm rounded-lg bg-gray-50 border border-gray-200 text-gray-900 outline-none focus:border-green-500 transition-colors cursor-pointer"
           >
-            <option value="openai/gpt-4o-mini">
+            <option selected value="openai/gpt-4o-mini">
               GPT-4o Mini (fast &amp; cheap)
             </option>
             <option value="openai/gpt-4o">GPT-4o (smarter)</option>
             <option value="google/gemini-2.5-flash">Gemini 2.5 Flash</option>
-            <option value="anthropic/claude-haiku-3-5">Claude 3.5 Haiku</option>
-            <option value="meta-llama/llama-3.1-8b-instruct:free">
-              Llama 3.1 8B (free)
-            </option>
           </select>
           <!-- Custom dropdown arrow, pointer-events-none so clicks pass through to the select -->
           <div
@@ -94,7 +90,7 @@
       </div>
 
       <button
-        class="summarize-btn w-full py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+        class="summarize-btn w-full py-2.5 rounded-lg bg-green-600/90 hover:bg-green-700/90 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2"
       >
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
           <path
