@@ -65,13 +65,11 @@ async function summarize() {
 
   try {
     const contentResp = await sendToTab(currentTab.id, "GET_CONTENT");
-    console.log("[popup.js] content from page:", contentResp);
     if (!contentResp?.success) {
       throw new Error(contentResp?.error || "Could not read page content.");
     }
 
     const aiResp = await sendToBackground("SUMMARIZE", contentResp.data);
-    console.log("[popup.js] AI response from background:", aiResp);
 
     if (aiResp?.error === "NO_KEY") {
       await store.remove(["apiKey"]);
@@ -100,9 +98,9 @@ async function summarize() {
 function renderResult(data) {
   // ── Meta row: reading time and word count ──
   const metaHtml = `
-    <span class="text-xs text-zinc-500">${sanitize(String(data.readingTimeMinutes ?? "—"))} min read</span>
-    <span class="text-zinc-700 text-xs">·</span>
-    <span class="text-xs text-zinc-500">${(data.wordCount ?? 0).toLocaleString()} words</span>
+    <span class="text-xs text-gray-500">${sanitize(String(data.readingTimeMinutes ?? "—"))} min read</span>
+    <span class="text-gray-300 text-xs">·</span>
+    <span class="text-xs text-gray-500">${(data.wordCount ?? 0).toLocaleString()} words</span>
   `;
 
   const metaRow = document.querySelector(".meta-row");
@@ -111,7 +109,7 @@ function renderResult(data) {
 
   // ── Bullet list: one <li> per summary point ──
   const bulletsHtml = (data.summary || []).map((text) => `
-    <li class="flex items-start gap-2 text-sm text-zinc-300 leading-relaxed">
+    <li class="flex items-start gap-2 text-sm text-gray-700 leading-relaxed">
       <span class="mt-[7px] w-1.5 h-1.5 rounded-full bg-green-500 shrink-0"></span>
       <span>${sanitize(text)}</span>
     </li>

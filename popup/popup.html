@@ -12,21 +12,14 @@
   </head>
 
   <body
-    class="w-[340px] bg-zinc-950 text-zinc-100"
-    style="font-family: &quot;Plus Jakarta Sans&quot;, sans-serif; margin: 0"
+    class="w-[340px] bg-white text-gray-900"
+    style="font-family: 'Plus Jakarta Sans', sans-serif; margin: 0;"
   >
     <!-- Header -->
-    <header
-      class="flex items-center gap-2.5 px-4 py-3 border-b border-zinc-800"
-    >
+    <header class="flex items-center gap-2.5 px-4 py-3 border-b border-gray-200">
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
         <circle cx="10" cy="10" r="9" stroke="#22c55e" stroke-width="1.5" />
-        <path
-          d="M6 10a4 4 0 018 0"
-          stroke="#22c55e"
-          stroke-width="1.5"
-          stroke-linecap="round"
-        />
+        <path d="M6 10a4 4 0 018 0" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" />
         <circle cx="10" cy="10" r="1.5" fill="#22c55e" />
       </svg>
       <span class="text-sm font-semibold tracking-tight">PageLens</span>
@@ -34,25 +27,25 @@
 
     <!-- Setup state -->
     <div class="setup-state p-4">
-      <p class="text-xs text-zinc-400 mb-3">
+      <p class="text-xs text-gray-500 mb-3">
         Paste your OpenRouter API key to get started.
       </p>
       <input
-        class="key-input w-full px-3 py-2 mb-3 text-sm rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 placeholder-zinc-600 outline-none focus:border-green-500 transition-colors"
+        class="key-input w-full px-3 py-2 mb-3 text-sm rounded-lg bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 outline-none focus:border-green-500 transition-colors"
         type="password"
         placeholder="sk-or-..."
       />
       <button
-        class="save-key-btn w-full py-2 rounded-lg bg-green-500 hover:bg-green-400 text-black text-sm font-semibold transition-colors"
+        class="save-key-btn w-full py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white text-sm font-semibold transition-colors"
       >
         Save Key
       </button>
       <a
         href="https://openrouter.ai/keys"
         target="_blank"
-        class="mt-2 block text-center text-xs text-zinc-600 hover:text-green-500 transition-colors"
+        class="mt-2 block text-center text-xs text-gray-400 hover:text-green-500 transition-colors"
       >
-        Get a free OpenRouter key →
+        Get a free OpenRouter key &rarr;
       </a>
     </div>
 
@@ -60,39 +53,28 @@
     <div class="idle-state hidden p-4">
       <!-- Model selector -->
       <div class="mb-3">
-        <label class="block text-xs text-zinc-500 mb-1.5"
-          >OpenRouter AI Model</label
-        >
+        <label class="block text-xs text-gray-500 mb-1.5">Model</label>
         <select
-          class="model-select w-full px-3 py-2 text-sm rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-100 outline-none focus:border-green-500 transition-colors cursor-pointer"
+          class="model-select w-full px-3 py-2 text-sm rounded-lg bg-gray-50 border border-gray-200 text-gray-900 outline-none focus:border-green-500 transition-colors cursor-pointer"
         >
-          <option value="openai/gpt-4o-mini">
-            GPT-4o Mini (fast &amp; cheap)
-          </option>
+          <option value="openai/gpt-4o-mini">GPT-4o Mini (fast &amp; cheap)</option>
           <option value="openai/gpt-4o">GPT-4o (smarter)</option>
           <option value="google/gemini-2.5-flash">Gemini 2.5 Flash</option>
           <option value="anthropic/claude-haiku-3-5">Claude 3.5 Haiku</option>
-          <option value="meta-llama/llama-3.1-8b-instruct:free">
-            Llama 3.1 8B (free)
-          </option>
+          <option value="meta-llama/llama-3.1-8b-instruct:free">Llama 3.1 8B (free)</option>
         </select>
       </div>
 
       <button
-        class="summarize-btn w-full py-2.5 rounded-lg bg-green-500 hover:bg-green-400 text-black text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+        class="summarize-btn w-full py-2.5 rounded-lg bg-green-500 hover:bg-green-600 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2"
       >
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path
-            d="M2 3.5h10M2 7h7M2 10.5h8"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
-          />
+          <path d="M2 3.5h10M2 7h7M2 10.5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
         </svg>
         Summarize Page
       </button>
       <button
-        class="change-key-btn mt-2 w-full py-1.5 text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
+        class="change-key-btn mt-2 w-full py-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors"
       >
         Change API key
       </button>
@@ -101,37 +83,25 @@
     <!-- Loading state -->
     <div class="loading-state hidden p-4">
       <div class="flex flex-col items-center gap-3 py-8">
-        <div
-          class="w-6 h-6 rounded-full border-2 border-zinc-800 border-t-green-500 animate-spin"
-        ></div>
-        <p class="text-sm text-zinc-400">Analyzing page…</p>
+        <div class="w-6 h-6 rounded-full border-2 border-gray-200 border-t-green-500 animate-spin"></div>
+        <p class="text-sm text-gray-500">Analyzing page&hellip;</p>
       </div>
     </div>
 
     <!-- Result state -->
     <div class="result-state hidden">
       <!-- Empty container — popup.js inserts read-time · word-count here -->
-      <div
-        class="meta-row flex items-center gap-3 px-4 py-2.5 border-b border-zinc-800"
-      ></div>
+      <div class="meta-row flex items-center gap-3 px-4 py-2.5 border-b border-gray-200"></div>
       <div class="px-4 py-3 max-h-64 overflow-y-auto">
-        <p
-          class="text-[10px] font-semibold uppercase tracking-widest text-zinc-600 mb-3"
-        >
-          Summary
-        </p>
+        <p class="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-3">Summary</p>
         <!-- Empty container — popup.js inserts bullet <li> items here -->
         <ul class="bullets space-y-2.5"></ul>
       </div>
-      <div class="flex gap-2 px-4 py-3 border-t border-zinc-800">
-        <button
-          class="again-btn flex-1 py-1.5 text-xs rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 transition-colors"
-        >
+      <div class="flex gap-2 px-4 py-3 border-t border-gray-200">
+        <button class="again-btn flex-1 py-1.5 text-xs rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors">
           Summarize Again
         </button>
-        <button
-          class="clear-btn px-3 py-1.5 text-xs rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 transition-colors"
-        >
+        <button class="clear-btn px-3 py-1.5 text-xs rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors">
           Clear
         </button>
       </div>
@@ -139,18 +109,14 @@
 
     <!-- Error state -->
     <div class="error-state hidden p-4 text-center">
-      <p class="text-sm text-zinc-300 mb-1">Something went wrong</p>
+      <p class="text-sm text-gray-700 mb-1">Something went wrong</p>
       <!-- Empty container — popup.js inserts the error message text here -->
-      <p class="error-msg text-xs text-red-400 mb-4"></p>
+      <p class="error-msg text-xs text-red-500 mb-4"></p>
       <div class="flex justify-center gap-2">
-        <button
-          class="retry-btn px-4 py-2 text-sm rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 transition-colors"
-        >
+        <button class="retry-btn px-4 py-2 text-sm rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors">
           Try Again
         </button>
-        <button
-          class="reset-btn px-4 py-2 text-sm rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 transition-colors"
-        >
+        <button class="reset-btn px-4 py-2 text-sm rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors">
           Start Over
         </button>
       </div>

@@ -9,11 +9,8 @@ if (!window.__pageLensInjected) {
   chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     if (msg.type === "GET_CONTENT") {
       try {
-        const data = extractContent();
-        console.log("[content.js] extracted data:", data);
-        sendResponse({ success: true, data });
+        sendResponse({ success: true, data: extractContent() });
       } catch (err) {
-        console.log("[content.js] extraction error:", err.message);
         sendResponse({ success: false, error: err.message });
       }
     }
@@ -40,13 +37,11 @@ if (!window.__pageLensInjected) {
     for (const sel of selectors) {
       const el = document.querySelector(sel);
       if (el && el.innerText.trim().length > 300) {
-        console.log("[content.js] matched selector:", sel);
         return { title, content: clean(el.innerText) };
       }
     }
 
     // Fallback: strip noise elements from a body clone
-    console.log("[content.js] no selector matched — using body fallback");
     const clone = document.body.cloneNode(true);
     ["nav", "header", "footer", "aside", "script", "style", "noscript"].forEach(
       (tag) => clone.querySelectorAll(tag).forEach((el) => el.remove())
